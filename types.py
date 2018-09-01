@@ -1,6 +1,5 @@
 import numbers
 import math
-import abc
 
 def setVal(x, value):
 
@@ -54,6 +53,10 @@ class Numeric(Atom, numbers.Number):
         self.type = 'Numeric'
 
 class Fraction(Atom):
+    '''
+    Although fractions are not fundamentally atomic, they will be taken as
+    atomic for specific purposes. I will fix this later.
+    '''
     def __init__(self, f):
         l = f.split('/')
         self.num = int(l[0])
@@ -61,14 +64,6 @@ class Fraction(Atom):
 
     def __repr__(self):
         return "%d/%d" % (self.num, self.den)
-
-class TrigId:
-    def __init__(self, x):
-        self.func_name = eval(x.split('(')[0])
-        self.op = x.split('(')[1].split(')')[0]
-
-    def __repr__(self):
-        return self.func_name.__name__ + '(' + self.op + ')'
 
 
 if __name__ == '__main__':
@@ -78,4 +73,3 @@ if __name__ == '__main__':
     
     '''
     print(Fraction('1/5'))
-    print(TrigId('math.sin(x)'))
