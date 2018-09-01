@@ -18,6 +18,9 @@ def decimEval(x):
     else:
         return eval(x)
 
+'''
+Testing section
+'''
 if __name__ == '__main__':
     print(types.Fraction('1/56'))
     print(decimEval('sin(95)'))
