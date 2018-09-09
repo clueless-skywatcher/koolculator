@@ -1,0 +1,19 @@
+Symbolic Addition Update
+------------------------
+
+Addition examples:
+>> x = Var('x')
+>> x
+x
+>> x + x
+2*x
+>> y = Var('y')
+>> z = Var('z')
+>> x + y
+x + y
+>> x + y + y
+x + 2*y
+>> x + y + z
+x + y + z
+>> x + x + y + z + x + y + z
+3*x + 2*y + 2*z
