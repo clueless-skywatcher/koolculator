@@ -94,6 +94,7 @@ class Var:
 def vars(s):
     '''
     Return symbols provided in string s
+    Separate symbols with commas and write coefficients with a '*' sign
     Usage:
     >> x, y, z = vars('x, y, z')
     >> u, v, w = vars('2*x, 4*y, z')
