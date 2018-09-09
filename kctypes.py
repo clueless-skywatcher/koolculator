@@ -1,145 +1,55 @@
-import abc
-import math
-import numbers
+class Add:
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
 
-class BaseClass:
+    def __repr__(self):
+        return '{0} {1} {2}'.format(self.left, '+', self.right)
+
     def __add__(self, other):
-        return Add(self, other)
-
-    def __mul__(self, other):
-        return Product(self, other)
-
-    def __radd__(self, other):
-        return Add(other, self)
-
-    def __rmul__(self, other):
-        return Product(other, self)
-
-    def __sub__(self, other):
-        return Subtract(self, other)
-
-    def __pow__(self, power):
-        return Power(self, power)
-
-
-
-class UnaryOperator(BaseClass):
-    def __init__(self, symbol, op):
-        self.op = op
-        self.symbol = symbol
-
-    def __repr__(self):
-        return '{0}{1}'.format(self.symbol, self.op)
-
-class BinaryOperator(BaseClass):
-    def __init__(self, symbol, left, right):
-        self.symbol = symbol
-        self.left = left
-        self.right = right
-
-    def __repr__(self):
-        return '({0} {1} {2})'.format(self.left, self.symbol, self.right)
-
-class Add(BinaryOperator):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-        BinaryOperator.__init__(self, '+', left, right)
-
-    def __new__(cls, left, right):
-        if left == right:
-            return Product(2, left)
-        return BinaryOperator.__new__(cls)
-
-    @classmethod
-    def flatten(cls, args):
-
-
-
-
-class Product(BinaryOperator):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-        BinaryOperator.__init__(self, '*', left, right)
-
-    def __repr__(self):
-        return '{0}{1}'.format(self.left, self.right)
-
-    def __new__(cls, left, right):
-        if left == right:
-            return Power(left, 2)
-        return BinaryOperator.__new__(cls)
-
-class Power(BinaryOperator):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-        BinaryOperator.__init__(self, '^', left, right)
-
-    def __repr__(self):
-        return '{0}^{1}'.format(self.left, self.right)
-
-
-class Subtract(BinaryOperator):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-        BinaryOperator.__init__(self, '-', left, right)
-
-    def __new__(cls, left, right):
-        if left == right:
-            return '0'
-        return BinaryOperator.__new__(cls)
-
-
-class Atom:
-    def __add__(self, other):
-        return Add(self, other)
-
-    def __radd__(self, other):
-        return Add(other, self)
-
-    def __mul__(self, other):
-        return Product(self, other)
-
-    def __rmul__(self, other):
-        return Product(other, self)
-
-    def __sub__(self, other):
-        return Subtract(self, other)
-
-class Var(BaseClass):
-    def __init__(self, name, **assumptions):
-        self.name = name
-        self.assumptions = assumptions
-        self.assumptions['commutative'] = assumptions.get('commutative', True)
-        self._purge(assumptions, self)
-
-    def __repr__(self):
-        return self.name
-
-    @staticmethod
-    def _purge(assumptions, obj = None):
-        '''
-        Purge any None values, similar to SymPy's _sanitize()
-        '''
-        for x in assumptions:
-            k = assumptions[x]
-            if k is None:
-                assumptions.pop(x)
-            assumptions[x] = bool(k)
-
-    def __eq__(self, other):
-        if type(self) == type(other):
-            return repr(self) == repr(other)
+        if isinstance(other, Var):
+            if self.left.name == other.name:
+                return Add(Var(self.left.name, coeff = int(self.left.coeff) + int(other.coeff)), self.right)
+            else:
+                return self.left.__add__(self.right.__add__(other))
         else:
-            return False
+            return Add(self, other)
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
+class Product:
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
 
+    def __repr__(self):
+        if isinstance(self.left, int):
+            if self.left == 1:
+                return str(self.right)
+            elif self.left == 0:
+                return '0'
+        elif isinstance(self.right, int):
+            if self.right == 1:
+                return str(self.left)
+            elif self.right == 0:
+                return '0'
+        else:
+            return '{0}{1}{2}'.format(str(self.left), '*', str(self.right))
 
+class Var:
+    def __init__(self, name, coeff = 1):
+        self.name = name
+        self.coeff = coeff
 
+    def __add__(self, other):
+        if isinstance(other, Var):
+            if self.name == other.name:
+                return Var(self.name, self.coeff + other.coeff)
+            else:
+                return Add(self, other)
+        else:
+            return Add(self, other)
 
-
+    def __repr__(self):
+        if self.coeff == 1:
+            return self.name
+        else:
+            return str(self.coeff) + '*' + self.name
