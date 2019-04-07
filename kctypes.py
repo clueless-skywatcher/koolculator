@@ -1,241 +1,241 @@
 import numbers
+from collections import OrderedDict
 
-class Numeric(numbers.Number):
-    def __init__(self, val):
-        self.val = val
-        self.ename = 'Numeric'
-
-    def __repr__(self):
-        return str(self.val)
-
-    def __eq__(self, other):
-        if isinstance(other, Numeric):
-            return self.val == other.val
-        elif isinstance(other, numbers.Number):
-            return self.val == other
-        return self.val == other.val
-
+class Elementary:
+    '''
+    Base class for all types
+    '''
     def __add__(self, other):
-        if isinstance(other, Var):
-            return Add(self, other)
-        if isinstance(other, numbers.Number):
-            return Numeric(self.val + other)
-        if isinstance(other, Numeric):
-            return Numeric(self.val + other.val)
+        if other == 0:
+            return self
+        if other == self:
+            return Mul(2, self)
         return Add(self, other)
-
-class BinaryOp:
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-        self.ename = "BinaryOperation"
-
-    def strrepr(self):
-        if isinstance(self.left, BinaryOp):
-            return '{0}({1}, {2})'.format(self.ename, self.left.strrepr(), self.right)
-        if isinstance(self.right, BinaryOp):
-            return '{0}({1}, {2})'.format(self.ename, self.left, self.right.strrepr())
-        if isinstance(self.left, BinaryOp) and isinstance(self.right, BinaryOp):
-            return '{0}({1}, {2})'.format(self.ename, self.left.strrepr(), self.right.strrepr())
-        else:
-            return '{0}({1}, {2})'.format(self.ename, self.left, self.right)
-
-class NotVariableException(Exception):
-    pass
-
-def varsearch(op, x):
-    '''
-    Searches op for the name of variable x and returns the variable alongwith its coefficient
-    op : Variable or term
-    x : Should be a variable. Throws exception if x is not a variable
-    '''
-    if not isinstance(x, Var):
-        raise NotVariableException("Input a variable as a second argument")
-    if isinstance(op, numbers.Number):
-        return -1
-    if isinstance(op, Var):
-        if x.name == op.name:
-            return op
-        else:
-            return -1
-    else:
-        a = varsearch(op.left, x)
-        b = varsearch(op.right, x)
-        if isinstance(a, Var):
-            return a
-        elif isinstance(b, Var):
-            return b
-        else:
-            return -1
-
-class Add(BinaryOp):
-    '''
-    Define a sum with left and right terms
-    '''
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-        if isinstance(left, Numeric):
-            self.left, self.right = right, left
-        self.ename = "Add"
-
-
-    def __repr__(self):
-        if self.left == 0:
-            return self.right
-        elif self.right == 0:
-            return self.left
-        return '{0} {1} {2}'.format(self.left, '+', self.right)
-
-    def __add__(self, other):
-        if isinstance(other, Var):
-            if isinstance(self.left, Var):
-                if self.left.name == other.name:
-                    return Add(Var(other.name, self.left.coeff + other.coeff), self.right)
-            if isinstance(self.right, Var):
-                if self.right.name == other.name:
-                    return Add(self.left, Var(other.name, self.right.coeff + other.coeff))
-        return self.left.__add__(self.right.__add__(other))
-
     def __radd__(self, other):
         return other.__add__(self)
 
     def __mul__(self, other):
         if other == 0:
             return 0
-        elif isinstance(other, numbers.Number):
-            return Product(other, self)
+        if other == 1:
+            return self
+        return Mul(self, other)
 
-    def __rmul__(self, other):
-        return Product(other, self)
-
-
-class Product(BinaryOp):
+class BinOp(Elementary):
     '''
-    Define a product with left and right terms
+    Class for binary operations
     '''
+    def __init__(self, sym, left, right, rep):
+        self.sym = sym
+        self.left = left
+        self.right = right
+        self.rep = rep
+    def __repr__(self):
+        if isinstance(self.left, BinOp):
+            return '({0}) {1} {2}'.format(self.left, self.sym, self.right)
+        if isinstance(self.right, BinOp):
+            return '{0} {1} ({2})'.format(self.left, self.sym, self.right)
+        if isinstance(self.left, BinOp) and isinstance(self.right, BinOp):
+            return '({0}) {1} ({2})'.format(self.left, self.sym, self.right)
+        return '{0} {1} {2}'.format(self.left, self.sym, self.right)
+
+class Add(BinOp):
+    '''
+    Class for Addition operation
+    '''
+    def __new__(cls, left, right, rep = 'Add'):
+        # if one of the operands is 0, return the other one
+        if left == 0:
+            return right
+        if right == 0:
+            return left
+        # if both operands are same, return a product of the operand with 2
+        if isinstance(left, numbers.Number):
+            left, right = right, left
+        if left == right:
+            return Mul(2, left)
+        cls.left = left
+        cls.right = right
+        cls.rep = rep
+        return BinOp.__new__(cls)
+
     def __init__(self, left, right):
         self.left = left
         self.right = right
-
+        BinOp.__init__(self, '+', left, right, 'Add')   
+    
     def __repr__(self):
-        if isinstance(self.left, numbers.Number):
-            if self.left == 1:
-                return str(self.right)
-            elif self.left == 0:
-                return 0
-        elif isinstance(self.right, numbers.Number):
-            if self.right == 1:
-                return str(self.left)
-            elif self.right == 0:
-                return 0
-        else:
-            return '{0}{1}{2}'.format(str(self.left), '*', str(self.right))
-
-    def __mul__(self, other):
-        if isinstance(self.right, numbers.Number):
-            pass
-
-
-
-class Var:
-    '''
-    Class for defining a symbol variable
-    Usage:
-    >> x = Var('x')
-    >> x
-    x
-    >> y = Var('x', coeff = 2)
-    >> y
-    2*x
-
-    Arguments:
-        name : Name to be held in the variable symbol
-        coeff : Coefficient of the variable symbol, by default 1
-
-    We strongly recommend against choosing placeholder names with non-unit coefficients
-    to be same as the variable names themselves, i.e we don't recommend using the following type of
-    declarations:
-
-    >> x = Var('x', coeff = 2) --> Avoid doing this
-
-    '''
-
-    def __init__(self, name, coeff = 1):
-        self.name = name
-        self.coeff = coeff
-        self.ename = 'Var'
+        return '{0} {1} {2}'.format(self.left, self.sym, self.right)
 
     def __add__(self, other):
-        if self.coeff == 0:
-            return other
-        elif other == 0:
+        if other == 0:
             return self
-        elif isinstance(other, Var):
-            if self.name == other.name:
-                return Var(self.name, self.coeff + other.coeff)
-            else:
-                return Add(self, other)
-        elif isinstance(other, numbers.Number):
-            other = Numeric(other)
-        return Add(self, other)
+        a = constructOpList(Add(Add(self.left, self.right), other))
+        dic = constructOpDict(a)
+        # things can go bad from here
+        return constAddsFromOpDict(dic)
 
-    def __radd__(self, other):
-        return self.__add__(other)
+def constAddsFromOpDict(opdict):
+    l = []
+    for x in opdict:
+        if x != 'const':
+            l.append(Var(x) * opdict[x])
+    if 'const' in opdict:
+        if opdict['const'] != 0:
+            l.append(opdict['const'])
+    a = l[0]
+    for i in range(1, len(l)):
+        a = Add(a, l[i])
+    return a
+
+
+def isSimilar(v1, v2):
+    if any(isinstance(x, (BinOp, numbers.Number)) for x in [v1, v2]):
+        return False
+    if isinstance(v1, Var) and isinstance(v2, MulVar):
+        return v1 == v2.var
+    if isinstance(v2, Var) and isinstance(v1, MulVar):
+        return v2 == v1.var    
+    if isinstance(v1, MulVar) and isinstance(v2, MulVar):
+        return v1.var == v2.var
+    return v1 == v2
+
+def constructOpList(op):
+    if isinstance(op, (Var, MulVar, numbers.Number)):
+        return [op]
+    return constructOpList(op.left) + constructOpList(op.right)
+
+def constructOpDict(oplist):
+    opdict = OrderedDict()
+    for x in oplist:
+        if isinstance(x, numbers.Number):
+            opdict['const'] = opdict.get('const', 0) + x
+        elif isinstance(x, Var):
+            opdict[x.name] = opdict.get(x.name, 0) + 1
+        elif isinstance(x, MulVar):
+            opdict[x.var.name] = opdict.get(x.var.name, 0) + x.co
+    return opdict
+        
+class Mul(BinOp):
+    '''
+    Class for multiplication operation
+    '''
+    def __new__(cls, left, right, rep = 'Mul'):
+        cls.left = left
+        cls.right = right
+        # if the left operand is a variable exchange the operand positions
+        # and make a multiplied variable instance
+        if isinstance(cls.left, Var):
+            return MulVar(cls.right, cls.left)
+        if isinstance(cls.right, Var):
+            return MulVar(cls.left, cls.right)
+        return BinOp.__new__(cls)
+
+    def __init__(self, left, right, rep = 'Mul'):
+        self.left = left
+        self.right = right
+        self.rep = rep
+        BinOp.__init__(self, '*', left, right, 'Mul')     
+
+    def expand(self):
+        pass
+
+def strrepr(op):
+    if isinstance(op, (Var, MulVar, numbers.Number)):
+        return op.__repr__()
+    return '{}({}, {})'.format(op.rep, strrepr(op.left), strrepr(op.right))
+
+    
+
+class MulVar(Elementary):
+    '''
+    Short for multiplied variable. It denotes a product where 
+    a single variable is one of the operands 
+    E.g: 2*x, (x + 1)*x
+    '''
+    def __init__(self, left, right):
+        self.co = left
+        self.var = right
+
+    def __add__(self, other):
+        if other == 0:
+            return self
+        #if the other operand is a variable: Eg: 2*x + y        
+        if isinstance(other, Var):
+            # if the other operand is same as the right variable
+            # implement a*x + x = (a + 1)*x
+            if other == self.var:
+                return MulVar(self.co + 1, other)
+        elif isinstance(other, MulVar):
+            if other.var == self.var:
+                return MulVar(self.co + other.co, other.var)
+        else:
+            return Add(self, other)
+    
+    def __repr__(self):
+        if isinstance(self.co, Add):
+            return '({0}){1}{2}'.format(self.co, '*', self.var)
+        if isinstance(self.var, Add):
+            return '{0}{1}({2})'.format(self.co, '*', self.var)
+        return '{0}{1}{2}'.format(self.co, '*', self.var)
 
     def __mul__(self, other):
-        if other == 0:
-            return 0
-        elif isinstance(other, numbers.Number):
-            return Var(self.name, coeff = self.coeff * other)
-        else:
-            return Product(self, other)
+        return MulVar(self, other)
 
-    def __rmul__(self, other):
-        return self.__mul__(other)
+    def __radd__(self, other):
+        return other.__add__(self)
+    def simplify(self):
+        return self
 
-    def __repr__(self):
-        if self.coeff == 1:
-            return self.name
-        else:
-            return str(self.coeff) + '*' + self.name
+class Var(Elementary):
+    def __init__(self, name):
+        self.name = name
 
     def __eq__(self, other):
         if isinstance(other, Var):
+            return self.name == other.name
+        return False
+
+    def __repr__(self):
+        return str(self.name)
+
+    def __add__(self, other):
+        if other == 0:
+            return self
+        if isinstance(other, Var):
             if self.name == other.name:
-                return self.coeff == other.coeff
-            else:
-                return False
-        else:
-            return False
+                return Mul(2, self)
+        return Add(self, other)
+    
+    def __mul__(self, other):
+        if other == 0:
+            return 0
+        if other == 1:
+            return self
+        return MulVar(other, self)
 
-    def __ne__(self, other):
-        return not self.__eq__(self, other)
+    def __lt__(self, other):
+        if isinstance(other, Var):
+            return self.name.__lt__(other.name)
+        if isinstance(other, Var):
+            return True
+        return False
 
-def vars(s):
-    '''
-    Return symbols provided in string s
-    Usage:
-    >> x, y, z = vars('x, y, z')
-    >> u, v, w = vars('2*x, 4*y, z')
-    >> u
-    2*x
-    >> v
-    4*y
-    >> w
-    z
-    '''
-    a = s.split(', ')
-    l = []
-    for i in a:
-        if len(i) == 1:
-            l.append(Var(i))
-        else:
-            co = i.split('*')[0]
-            nm = i.split('*')[1]
-            l.append(Var(nm, co))
-    return tuple(l)
+    def __hash__(self):
+        return hash((self.name, "Var"))
 
-# Test code here
+    def __rmul__(self, other):
+        return self.__mul__(other)
+    
+    def __radd__(self, other):
+        return other.__add__(self)
+        
 if __name__ == '__main__':
-    pass
+    x = Var('x')
+    y = Var('y')
+    z = Var('z')
+    x1 = Var('x') * 2
+    a = x + 1 + y + 1 + z + z
+    print(strrepr(a + y + z + 1 + y + 1 + 2 + z + x))
+    print(strrepr(x + y + z + x + y + z + 1 + z + 1 + 0 + x + y + 0 + 1111))
+    print(strrepr((x + y) * 2))
