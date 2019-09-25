@@ -1,5 +1,9 @@
-from sympy.abc import x, y
+from kctypes import *
+import sympy
 
-e = x + y + x
-print(e)
-
+if __name__ == '__main__':
+    x = Var('x')
+    y = Var('y')
+    z = Var('z')
+    x1 = Var('x') * 2
+    print(x + x + z)

@@ -62,8 +62,8 @@ class Add(BinOp):
     def __init__(self, left, right):
         self.left = left
         self.right = right
-        BinOp.__init__(self, '+', left, right, 'Add')   
-    
+        BinOp.__init__(self, '+', left, right, 'Add')
+
     def __repr__(self):
         return '{0} {1} {2}'.format(self.left, self.sym, self.right)
 
@@ -95,7 +95,7 @@ def isSimilar(v1, v2):
     if isinstance(v1, Var) and isinstance(v2, MulVar):
         return v1 == v2.var
     if isinstance(v2, Var) and isinstance(v1, MulVar):
-        return v2 == v1.var    
+        return v2 == v1.var
     if isinstance(v1, MulVar) and isinstance(v2, MulVar):
         return v1.var == v2.var
     return v1 == v2
@@ -115,7 +115,7 @@ def constructOpDict(oplist):
         elif isinstance(x, MulVar):
             opdict[x.var.name] = opdict.get(x.var.name, 0) + x.co
     return opdict
-        
+
 class Mul(BinOp):
     '''
     Class for multiplication operation
@@ -135,7 +135,7 @@ class Mul(BinOp):
         self.left = left
         self.right = right
         self.rep = rep
-        BinOp.__init__(self, '*', left, right, 'Mul')     
+        BinOp.__init__(self, '*', left, right, 'Mul')
 
     def expand(self):
         pass
@@ -145,12 +145,12 @@ def strrepr(op):
         return op.__repr__()
     return '{}({}, {})'.format(op.rep, strrepr(op.left), strrepr(op.right))
 
-    
+
 
 class MulVar(Elementary):
     '''
-    Short for multiplied variable. It denotes a product where 
-    a single variable is one of the operands 
+    Short for multiplied variable. It denotes a product where
+    a single variable is one of the operands
     E.g: 2*x, (x + 1)*x
     '''
     def __init__(self, left, right):
@@ -160,18 +160,20 @@ class MulVar(Elementary):
     def __add__(self, other):
         if other == 0:
             return self
-        #if the other operand is a variable: Eg: 2*x + y        
+        #if the other operand is a variable: Eg: 2*x + y
         if isinstance(other, Var):
             # if the other operand is same as the right variable
             # implement a*x + x = (a + 1)*x
             if other == self.var:
                 return MulVar(self.co + 1, other)
+            else:
+                return Add(self, other)
         elif isinstance(other, MulVar):
             if other.var == self.var:
                 return MulVar(self.co + other.co, other.var)
         else:
             return Add(self, other)
-    
+
     def __repr__(self):
         if isinstance(self.co, Add):
             return '({0}){1}{2}'.format(self.co, '*', self.var)
@@ -206,7 +208,7 @@ class Var(Elementary):
             if self.name == other.name:
                 return Mul(2, self)
         return Add(self, other)
-    
+
     def __mul__(self, other):
         if other == 0:
             return 0
@@ -226,16 +228,6 @@ class Var(Elementary):
 
     def __rmul__(self, other):
         return self.__mul__(other)
-    
+
     def __radd__(self, other):
         return other.__add__(self)
-        
-if __name__ == '__main__':
-    x = Var('x')
-    y = Var('y')
-    z = Var('z')
-    x1 = Var('x') * 2
-    a = x + 1 + y + 1 + z + z
-    print(strrepr(a + y + z + 1 + y + 1 + 2 + z + x))
-    print(strrepr(x + y + z + x + y + z + 1 + z + 1 + 0 + x + y + 0 + 1111))
-    print(strrepr((x + y) * 2))
