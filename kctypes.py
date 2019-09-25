@@ -124,8 +124,8 @@ class Mul(BinOp):
         cls.left = left
         cls.right = right
         # if the left operand is a variable exchange the operand positions
-        # and make a multiplied variable instance
-        if isinstance(cls.left, Var):
+        # and make a MulVar instance, otherwise maintain the order of multiplication
+        if isinstance(cls.right, numbers.Number):
             return MulVar(cls.right, cls.left)
         if isinstance(cls.right, Var):
             return MulVar(cls.left, cls.right)
@@ -171,6 +171,8 @@ class MulVar(Elementary):
         elif isinstance(other, MulVar):
             if other.var == self.var:
                 return MulVar(self.co + other.co, other.var)
+            else:
+                return Add(self, other)
         else:
             return Add(self, other)
 
@@ -207,6 +209,9 @@ class Var(Elementary):
         if isinstance(other, Var):
             if self.name == other.name:
                 return Mul(2, self)
+        if isinstance(other, MulVar):
+            if other.var == self:
+                return MulVar(other.co + 1, other.var)
         return Add(self, other)
 
     def __mul__(self, other):

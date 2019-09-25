@@ -1,27 +1,17 @@
-import types
 from math import *
+from kctypes import *
 
-def abs(x):
+def subvar(expr, x: Var, y: Var):
     '''
-    Return absolute value of x
+    Substitutes every symbol 'x' in a given expression "expr"
+    with the symbol 'y'
     '''
-    return max(x, -x)
-
-def decimEval(x):
-    '''
-    Evaluate the decimal expression, fraction or trigonometric identity
-    '''
-    if isinstance(x, types.Fraction):
-        return float(x.num) / x.den
-    elif isinstance(x, str):
-        return 'decimEval(str(x))'
-    else:
-        return eval(x)
-
-'''
-Testing section
-'''
-if __name__ == '__main__':
-    print(types.Fraction('1/56'))
-    print(decimEval('sin(95)'))
-    print(decimEval('sin(x)'))
+    if isinstance(expr, Var):
+        if expr == x:
+            return y
+    if isinstance(expr, MulVar):
+        if expr.var == x:
+            return MulVar(subvar(expr.co, x, y), y)
+    if isinstance(expr, Add):
+        return subvar(expr.left, x, y) + subvar(expr.right, x, y)
+    return expr
