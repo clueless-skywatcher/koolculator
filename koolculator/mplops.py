@@ -1,5 +1,5 @@
 from math import *
-from kctypes import *
+from koolculator.primitives import *
 
 def subvar(expr, x: Var, y: Var):
     '''

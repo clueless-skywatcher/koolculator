@@ -1,10 +1,8 @@
-from kctypes import *
-import sympy
-from mplops import *
+import koolculator as kc
 
 if __name__ == '__main__':
-    x = Var('x')
-    y = Var('y')
-    z = Var('z')
-    a = (x + y + 1) * x
-    print(subvar(a, x, y))
+    x = kc.Var('x')
+    y = kc.Var('y')
+    z = kc.Var('z')
+    a = (x + y + 1) * (x + 1)
+    print(kc.strrepr(a))
