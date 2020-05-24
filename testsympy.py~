@@ -1,5 +1,1 @@
-import sympy
-
-e = x + y + x
-print(e)
-
+from
