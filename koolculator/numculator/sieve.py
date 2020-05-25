@@ -104,7 +104,7 @@ class EratoSieve:
 		while self._primelist[start] <= b:
 			prime_range.append(self._primelist[start])
 			start += 1
-
+			
 		return prime_range
 
 	def nthprime(self, n):
@@ -131,8 +131,3 @@ class EratoSieve:
 		if n > len(self._list) - 1:
 			self.stretch_to(int(n * 1.5))
 		return n in self._primelist
-
-if __name__ == '__main__':
-	sieve = EratoSieve()
-	print(sieve.primes(10, 100))
-	
