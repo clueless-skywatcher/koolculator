@@ -6,5 +6,9 @@ Till now implemented the addition of variable symbols together.
 Any feedback or bug report will be highly appreciated.
 Read the KCExamples file for usage examples
 
+--> Numculator Sieve of Eratosthenes Update: (May 24, 2020)
+Started the number theory subpackage and implemented a dynamic Sieve
+of Eratosthenes.
+
 --> Send any kind of recommendations and bug reports at contact.koolculator@gmail.com.
 I will try to reply to your mails as soon as possible.
