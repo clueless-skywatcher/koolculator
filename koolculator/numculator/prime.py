@@ -25,7 +25,7 @@ def prime_range(a, b):
 	---------------------------------------------------
 	Usage:
 	>>> from koolculator.numculator import prime
-	>>> prime.primes(10, 20)
+	>>> prime.prime_range(10, 20)
 	[11, 13, 17, 19]
 	---------------------------------------------------
 	'''
@@ -73,3 +73,43 @@ def random_prime(a, b):
 		return
 	rand = random.randint(0, len(prime_list) - 1)
 	return prime_list[rand]
+
+def primorial(n):
+	'''
+	Returns the product of the first n primes
+	-----------------------------------------
+	Usage:
+	>>> prime.primorial(25)
+	2305567963945518424753102147331756070
+	>>> prime.primorial(1)
+	2
+	-----------------------------------------
+	'''
+	if n < 1:
+		return 1
+	prod = 1
+	for i in range(1, n + 1):
+		prod *= nth_prime(i)
+
+	return prod
+
+def natural_primorial(n):
+	'''
+	Returns the product of all the primes less than
+	or equal to n
+	-----------------------------------------------
+	Usage:
+	>>> prime.natural_primorial(25)
+	223092870
+	>>> prime.natural_primorial(1)
+	1
+	-----------------------------------------------
+	'''
+	if n <= 1:
+		return 1
+	prod = 1
+	primelist = prime_range(1, n)
+	for prime in primelist:
+		prod *= prime
+
+	return prod

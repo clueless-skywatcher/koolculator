@@ -98,12 +98,10 @@ class EratoSieve:
 		if b > len(self._list) - 1:
 			self.stretch_to(int(b * 1.5)) 
 		for i in range(len(self._primelist)):
-			if self._primelist[i] >= a:
-				start = i
+			if self._primelist[i] > b:
 				break
-		while self._primelist[start] <= b:
-			prime_range.append(self._primelist[start])
-			start += 1
+			if self._primelist[i] >= a and self._primelist[i] <= b:
+				prime_range.append(self._primelist[i])
 			
 		return prime_range
 
