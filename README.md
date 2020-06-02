@@ -4,6 +4,8 @@ A CAS made from scratch in python trying to emulate SymPy.
 scratch)
 
 References:
+1. Computer Algebra and Symbolic Computation: Mathematical Methods
+by Joel S. Cohen.
 
 --> Symbolic Addition Update: (Sep 10, 2018)
 Till now implemented the addition of variable symbols together.
