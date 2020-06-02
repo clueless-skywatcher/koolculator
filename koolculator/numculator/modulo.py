@@ -1,4 +1,3 @@
-import math
 
 def gcd_euclid(a, b):
 	"""
@@ -26,7 +25,7 @@ def gcd_extended_euclid(a, b):
 	Mathematical Methods by Joel S. Cohen
 	-----------------------------------------------------------------
 	Usage:
-	>>> from koolculator.numculator.basic import gcd_extended_euclid
+	>>> from koolculator.numculator import gcd_extended_euclid
 	>>> gcd_extended_euclid(45, 18)
 	(9, 1, -2)
 	-----------------------------------------------------------------
@@ -48,6 +47,29 @@ def gcd_extended_euclid(a, b):
 	else:
 		return -a, -mpp, -npp
 
+def modular_inverse(a, m):
+	"""
+	Returns the modular multiplicative inverse of a w.r.t modulo
+	m, i.e. the number x such that a * x === 1 (mod m).
+	------------------------------------------------------------
+	Usage:
+	>>> from koolculator.numculator import modular_inverse
+	>>> modular_inverse(3, 11)
+	4
+	>>> modular_inverse(10, 17)
+	12
+	------------------------------------------------------------
+	"""
+	g, x, _ = gcd_extended_euclid(a, m)
+
+	if g != 1:
+		print("No solution for modular inverse")
+		return
+	else:
+		x = (x % m + m) % m
+		return x
+
+
 def chinese_remainder(m, X):
 	"""
 	Given two lists of integers m = [m1, m2, ..., mn] and
@@ -63,8 +85,9 @@ def chinese_remainder(m, X):
 
 	The user must provide mutually coprime integers in the list
 	m for the algorithm to work properly. Till yet no testing
-	functionality has been added to check the coprimality of integers
-	in m.
+	functionality has been added to check the coprimality of 
+	integers in m, so the user has to take care of giving the 
+	correct input.
 
 	Algorithm source: Computer Algebra and Symbolic Computation:
 	Mathematical Methods by Joel S. Cohen
