@@ -1,7 +1,7 @@
 import math
 
 def gcd_euclid(a, b):
-	'''
+	"""
 	Returns the GCD of a and b using Euclid's
 	algorithm
 	--------------------------------------------------------
@@ -10,7 +10,7 @@ def gcd_euclid(a, b):
 	>>> gcd_euclid(45, 18)
 	9
 	--------------------------------------------------------
-	'''
+	"""
 	while b != 0:
 		r = a % b
 		a = b
@@ -18,7 +18,7 @@ def gcd_euclid(a, b):
 	return int(abs(a))
 
 def gcd_extended_euclid(a, b):
-	'''
+	"""
 	Returns the GCD of a and b, and integers m and n such that
 	m*a + n*b = gcd(a, b). The output order is (gcd(a, b), m, n).
 
@@ -30,7 +30,7 @@ def gcd_extended_euclid(a, b):
 	>>> gcd_extended_euclid(45, 18)
 	(9, 1, -2)
 	-----------------------------------------------------------------
-	'''
+	"""
 	mpp, mp, npp, np = 1, 0, 0, 1
 	while b != 0:
 		q = a // b
@@ -49,7 +49,7 @@ def gcd_extended_euclid(a, b):
 		return -a, -mpp, -npp
 
 def chinese_remainder(m, X):
-	'''
+	"""
 	Given two lists of integers m = [m1, m2, ..., mn] and
 	X = [x1, x2, ..., xn] of same length, and assuming the 
 	integers in m are relatively prime, this function returns
@@ -78,7 +78,7 @@ def chinese_remainder(m, X):
 	>>> chinese_remainder([99, 97, 95], [49, 76, 65])
 	639985
 	------------------------------------------------------------
-	'''
+	"""
 	if len(m) != len(X):
 		print("m and X must be equal in length")
 		return
