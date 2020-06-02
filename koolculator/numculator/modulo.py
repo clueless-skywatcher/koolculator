@@ -61,9 +61,23 @@ def chinese_remainder(m, X):
 	(where === is the congruence sign), using the Chinese 
 	Remainder Theorem. Also for each i, xi < mi must hold.
 
+	The user must provide mutually coprime integers in the list
+	m for the algorithm to work properly. Till yet no testing
+	functionality has been added to check the coprimality of integers
+	in m.
+
 	Algorithm source: Computer Algebra and Symbolic Computation:
 	Mathematical Methods by Joel S. Cohen
-
+	------------------------------------------------------------
+	Usage:
+	>>> from koolculator.numculator import chinese_remainder
+	>>> chinese_remainder([3, 4, 5], [1, 2, 4])
+	34
+	>>> chinese_remainder([5, 7], [1, 3])
+	31
+	>>> chinese_remainder([99, 97, 95], [49, 76, 65])
+	639985
+	------------------------------------------------------------
 	'''
 	if len(m) != len(X):
 		print("m and X must be equal in length")
