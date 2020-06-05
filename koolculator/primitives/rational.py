@@ -36,6 +36,13 @@ class Integer(RationalNumExpression, int):
 
 	def __repr__(self):
 		return self.__str__()
+
+	def __eq__(self, other):
+		if isinstance(other, Integer):
+			return self.val == other.val
+		elif isinstance(other, int):
+			return self.val == other
+		return False
 		
 	def eval(self):
 		return self.val
@@ -147,6 +154,36 @@ class Undefined(RationalNumExpression):
 	def __repr__(self):
 		return self.__str__()
 
+	def __add__(self, other):
+		return self
+
+	def __radd__(self, other):
+		return self
+
+	def __sub__(self, other):
+		return self
+
+	def __rsub__(self, other):
+		return self
+
+	def __mul__(self, other):
+		return self
+
+	def __rmul__(self, other):
+		return self
+
+	def __div__(self, other):
+		return self
+
+	def __rdiv__(self, other):
+		return self
+
+	def __pow__(self, other):
+		return self
+
+	def __rpow__(self, other):
+		return self
+
 def kc_rationalize(x):
 	if not isinstance(x, (int, RationalNumExpression)):
 		return NotImplemented
@@ -237,6 +274,12 @@ def kc_eval_pow(a, b):
 	if isinstance(a, Undefined) or isinstance(b, Undefined):
 		return Undefined()
 
+	if a == Integer(0):
+		if b >= 1:
+			return Integer(0)
+		elif b <= 0:
+			return Undefined()
+			
 	if isinstance(a, RationalFraction):
 		if a.num != 0:
 			if b > 0:

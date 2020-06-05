@@ -1,4 +1,5 @@
-import numbers
+from koolculator.primitives.rational import *
+from koolculator.primitives.constants import *
 from collections import OrderedDict
 
 class Elementary:
@@ -6,18 +7,18 @@ class Elementary:
     Base class for all types
     '''
     def __add__(self, other):
-        if other == 0:
+        if other == Zero:
             return self
         if other == self:
-            return Mul(2, self)
+            return Mul(Integer(2), self)
         return Add(self, other)
     def __radd__(self, other):
         return other.__add__(self)
 
     def __mul__(self, other):
-        if other == 0:
-            return 0
-        if other == 1:
+        if other == Zero:
+            return Zero
+        if other == One:
             return self
         return Mul(self, other)
 
@@ -45,16 +46,16 @@ class Add(BinOp):
     '''
     def __new__(cls, left, right, rep = 'Add'):
         # if one of the operands is 0, return the other one
-        if left == 0:
+        if left == Zero:
             return right
-        if right == 0:
+        if right == Zero:
             return left
         # If the left operand is a number, shift it to the right
-        if isinstance(left, numbers.Number):
+        if isinstance(left, (RationalFraction, Integer, int)):
             left, right = right, left
         # if both operands are same, return a product of the operand with 2
         if left == right:
-            return Mul(2, left)
+            return Mul(Integer(2), left)
         cls.left = left
         cls.right = right
         cls.rep = rep
@@ -67,6 +68,9 @@ class Add(BinOp):
 
     def __repr__(self):
         return '{0} {1} {2}'.format(self.left, self.sym, self.right)
+
+    def __str__(self):
+        return self.__repr__()   
 
     def __add__(self, other):
         if other == 0:
@@ -82,7 +86,7 @@ def constAddsFromOpDict(opdict):
         if x != 'const':
             l.append(Var(x) * opdict[x])
     if 'const' in opdict:
-        if opdict['const'] != 0:
+        if opdict['const'] != Zero:
             l.append(opdict['const'])
     a = l[0]
     for i in range(1, len(l)):
@@ -91,7 +95,7 @@ def constAddsFromOpDict(opdict):
 
 
 def isSimilar(v1, v2):
-    if any(isinstance(x, (BinOp, numbers.Number)) for x in [v1, v2]):
+    if any(isinstance(x, (BinOp, RationalFraction, int, Integer)) for x in [v1, v2]):
         return False
     if isinstance(v1, Var) and isinstance(v2, MulVar):
         return v1 == v2.var
@@ -102,14 +106,14 @@ def isSimilar(v1, v2):
     return v1 == v2
 
 def constructOpList(op):
-    if isinstance(op, (Var, MulVar, numbers.Number)):
+    if isinstance(op, (Var, MulVar, RationalFraction, int, Integer)):
         return [op]
     return constructOpList(op.left) + constructOpList(op.right)
 
 def constructOpDict(oplist):
     opdict = OrderedDict()
     for x in oplist:
-        if isinstance(x, numbers.Number):
+        if isinstance(x, (RationalFraction, int, Integer)):
             opdict['const'] = opdict.get('const', 0) + x
         elif isinstance(x, Var):
             opdict[x.name] = opdict.get(x.name, 0) + 1
@@ -126,7 +130,7 @@ class Mul(BinOp):
         cls.right = right
         # if the left operand is a variable exchange the operand positions
         # and make a MulVar instance, otherwise maintain the order of multiplication
-        if isinstance(cls.right, numbers.Number):
+        if isinstance(cls.right, (RationalFraction, int, Integer)):
             return MulVar(cls.right, cls.left)
         if isinstance(cls.right, Var):
             return MulVar(cls.left, cls.right)
@@ -140,13 +144,6 @@ class Mul(BinOp):
 
     def expand(self):
         pass
-
-def strrepr(op):
-    if isinstance(op, (Var, MulVar, numbers.Number)):
-        return op.__repr__()
-    return '{}({}, {})'.format(op.rep, strrepr(op.left), strrepr(op.right))
-
-
 
 class MulVar(Elementary):
     '''
@@ -184,6 +181,9 @@ class MulVar(Elementary):
             return '{0}{1}({2})'.format(self.co, '*', self.var)
         return '{0}{1}{2}'.format(self.co, '*', self.var)
 
+    def __str__(self):
+        return self.__repr__()        
+
     def __mul__(self, other):
         return MulVar(self, other)
 
@@ -209,16 +209,16 @@ class Var(Elementary):
             return self
         if isinstance(other, Var):
             if self.name == other.name:
-                return Mul(2, self)
+                return Mul(Integer(2), self)
         if isinstance(other, MulVar):
             if other.var == self:
-                return MulVar(other.co + 1, other.var)
+                return MulVar(other.co + One, other.var)
         return Add(self, other)
 
     def __mul__(self, other):
-        if other == 0:
-            return 0
-        if other == 1:
+        if other == Zero:
+            return Zero
+        if other == One:
             return self
         return MulVar(other, self)
 
@@ -229,6 +229,9 @@ class Var(Elementary):
             return True
         return False
 
+    def __str__(self):
+        return self.__repr__()   
+
     def __hash__(self):
         return hash((self.name, "Var"))
 
@@ -237,3 +240,12 @@ class Var(Elementary):
 
     def __radd__(self, other):
         return other.__add__(self)
+
+def strrepr(op):
+    if isinstance(op, Var):
+        return f"Var({op.name})"
+    if isinstance(op, MulVar):
+        return f"MulVar{op.co, op.var.name}"
+    
+    return '{}({}, {})'.format(op.rep, strrepr(op.left), strrepr(op.right))
+

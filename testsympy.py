@@ -1,8 +1,7 @@
-from koolculator.primitives.rational import *
+from koolculator.primitives.kctypes import *
 
 if __name__ == '__main__':
-	a = RationalFraction(1, 2)
-	b = Integer(5)
-	c = RationalFraction(25, 60)
-
-	print(kc_rationalize_numexp(RSub(RAdd(a, b, c), c, RPow(b))))
+	x = Var('x')
+	y = Var('y')
+	z = Var('z')
+	print(RationalFraction(2, 5) * x + 5 * y + x + z + y + x + 1)
