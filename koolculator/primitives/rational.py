@@ -36,6 +36,9 @@ class Integer(RationalNumExpression, int):
 
 	def __repr__(self):
 		return self.__str__()
+		
+	def eval(self):
+		return self.val
 
 class Fraction(RationalNumExpression):
 	def __new__(cls, a, b):
@@ -47,6 +50,24 @@ class Fraction(RationalNumExpression):
 	def __init__(self, a, b):
 		self.num = Integer(a)
 		self.denom = Integer(b)
+
+	def eval(self):
+		return self.num.eval() / self.denom.eval()
+
+	def __add__(self, other):
+		return kc_eval_sum(self, other)
+
+	def __sub__(self, other):
+		return kc_eval_diff(self, other)		
+
+	def __mul__(self, other):
+		return kc_eval_prod(self, other)
+
+	def __div__(self, other):
+		return kc_eval_quot(self, other)
+
+	def __pow__(self, other):
+		return kc_eval_pow(self, other)
 
 
 class RationalFraction(RationalNumExpression):
@@ -83,6 +104,39 @@ class RationalFraction(RationalNumExpression):
 	def __repr__(self):
 		return self.__str__()
 
+	def eval(self):
+		return self.num.eval() / self.denom.eval()
+
+	def __add__(self, other):
+		return kc_eval_sum(self, other)
+
+	def __radd__(self, other):
+		return kc_eval_sum(other, self)
+
+	def __sub__(self, other):
+		return kc_eval_diff(self, other)		
+
+	def __rsub__(self, other):
+		return kc_eval_diff(other, self)
+
+	def __mul__(self, other):
+		return kc_eval_prod(self, other)
+
+	def __rmul__(self, other):
+		return kc_eval_prod(other, self)
+
+	def __div__(self, other):
+		return kc_eval_quot(self, other)
+
+	def __rdiv__(self, other):
+		return kc_eval_quot(other, self)
+
+	def __pow__(self, other):
+		return kc_eval_pow(self, other)
+
+	def __rpow__(self, other):
+		return kc_eval_pow(other, self)
+
 class Undefined(RationalNumExpression):
 	def __init__(self):
 		pass
@@ -112,7 +166,7 @@ def kc_rationalize(x):
 				return RationalFraction(Integer(-n // g), Integer(d // g))
 
 def kc_rationalize_numexp(x):
-	if not isinstance(x, RationalNumExpression):
+	if not isinstance(x, (int, RationalNumExpression)):
 		return NotImplemented
 	exp = kc_rationalize_rec_numexp(x)
 	if exp == Undefined():
@@ -121,27 +175,85 @@ def kc_rationalize_numexp(x):
 		return kc_rationalize(exp)
 
 def kc_eval_sum(a, b):
-	if not isinstance(a, RationalNumExpression) or not isinstance(b, RationalNumExpression):
+	if not isinstance(a, (int, RationalNumExpression)) or not isinstance(b, (int, RationalNumExpression)):
 		return NotImplemented
+
+	if isinstance(a, Undefined) or isinstance(b, Undefined):
+		return Undefined()
 	
-	if isinstance(a, Integer):
+	if isinstance(a, int):
 		a = Fraction(a, 1)
-	if isinstance(b, Integer):
+	if isinstance(b, int):
 		b = Fraction(b, 1)
 
 	return RationalFraction(a.num * b.denom + b.num * a.denom, a.denom * b.denom)		 
 
 def kc_eval_diff(a, b):
-	if not isinstance(a, RationalNumExpression) or not isinstance(b, RationalNumExpression):
+	if not isinstance(a, (int, RationalNumExpression)) or not isinstance(b, (int, RationalNumExpression)):
 		return NotImplemented
+
+	if isinstance(a, Undefined) or isinstance(b, Undefined):
+		return Undefined()
 	
-	if isinstance(a, Integer):
+	if isinstance(a, int):
 		a = Fraction(a, 1)
-	if isinstance(b, Integer):
+	if isinstance(b, int):
 		b = Fraction(b, 1)
 
 	return RationalFraction(a.num * b.denom - b.num * a.denom, a.denom * b.denom)
 
+def kc_eval_prod(a, b):
+	if not isinstance(a, (int, RationalNumExpression)) or not isinstance(b, (int, RationalNumExpression)):
+		return NotImplemented
+
+	if isinstance(a, Undefined) or isinstance(b, Undefined):
+		return Undefined()
+	
+	if isinstance(a, int):
+		a = Fraction(a, 1)
+	if isinstance(b, int):
+		b = Fraction(b, 1)
+
+	return RationalFraction(a.num * b.num, a.denom * b.denom)
+
+def kc_eval_quot(a, b):
+	if not isinstance(a, (int, RationalNumExpression)) or not isinstance(b, (int, RationalNumExpression)):
+		return NotImplemented
+
+	if isinstance(a, Undefined) or isinstance(b, Undefined):
+		return Undefined()
+	
+	if isinstance(a, int):
+		a = Fraction(a, 1)
+	if isinstance(b, int):
+		b = Fraction(b, 1)
+
+	return RationalFraction(a.num * b.denom, b.num * a.denom)
+
+def kc_eval_pow(a, b):
+	if not isinstance(a, (int, RationalNumExpression)) or not isinstance(b, (int, RationalNumExpression)):
+		return NotImplemented
+
+	if isinstance(a, Undefined) or isinstance(b, Undefined):
+		return Undefined()
+
+	if isinstance(a, RationalFraction):
+		if a.num != 0:
+			if b > 0:
+				s = kc_eval_pow(a, b - 1)
+				return kc_eval_prod(s, a)
+			elif b == 0:
+				return Integer(1)
+			elif b == -1:
+				return RationalFraction(a.denom, a.num)
+			elif b < -1:
+				s = RationalFraction(a.denom, a.num)
+				return kc_eval_pow(s, -b)
+		elif a.num == 0:
+			if b >= 1:
+				return Integer(0)
+			elif b <= 0:
+				return Undefined()
 
 def kc_rationalize_rec_numexp(x):
 	if isinstance(x, Integer):
@@ -151,7 +263,7 @@ def kc_rationalize_rec_numexp(x):
 			return Undefined()
 		else:
 			return x
-	elif isinstance(x, RationalNumExpression):
+	elif isinstance(x, (int, RationalNumExpression)):
 		if len(x.args) == 1:
 			exp = kc_rationalize_rec_numexp(x.args[0])
 			if exp == Undefined():
@@ -181,3 +293,4 @@ def kc_rationalize_rec_numexp(x):
 					return Undefined()
 				else:
 					return kc_eval_pow(exp, x.args[1])
+	
